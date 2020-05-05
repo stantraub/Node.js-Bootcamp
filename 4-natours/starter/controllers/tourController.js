@@ -1,9 +1,30 @@
 const Tour = require('./../models/tourModels');
+const APIFeatures = require('../utils/apiFeatures')
 
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5'
+  req.query.sort = '-ratingsAverage,price'
+  req.query.fields = 'name,price,ratingsAveerage,summary,difficulty'
+  next()
+}
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    // EXECUTE QUERY
+
+    // APIFeatures class expects a query object. Tour.find creates a query
+    // object, but does not execute the query right away (not using await on
+    // it). This allows us to create a query object that we can then chain
+    // other methods onto such as sort or another find
+
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await features.query;
+
+    // SEND RESPONSE
     res.status(200).json({
       status: 'sucess',
       requestedAt: req.requestTime,
@@ -15,10 +36,9 @@ exports.getAllTours = async (req, res) => {
   } catch (error) {
     res.status(404).json({
       status: 'fail',
-      message: err
-    })
+      message: error,
+    });
   }
-    
 };
 
 exports.getTour = async (req, res) => {
@@ -92,7 +112,5 @@ exports.updateTour = async (req, res) => {
      status: 'fail',
      message: err,
    });
-}
-
- 
+  }
 };
