@@ -2,7 +2,6 @@ const Review = require('./../models/reviewModel');
 // const catchAsync = require('./../utils/catchAsync')
 const factory = require('./handlerFactory')
 
-
 exports.setTourUserIds = (req, res, next) => {
     // Allows nested routes
     if (!req.body.tour) req.body.tour = req.params.tourID
